@@ -5,8 +5,8 @@ import io
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import inch
-from reportlab.lib.pagesizes import letter
-import requests
+from reportlab.lib.pagesizes import A4
+# import requests
 
 # from docx import Document
 # from docx.shared import Inches
@@ -37,16 +37,12 @@ def index(request):
 
         # criando BIOstream and fotos
         buf = io.BytesIO()
-        response1 = requests.get(data['foto'], stream=True)
-        foto = io.BytesIO(response1.content)
-        response2 = requests.get(data['foto-shiny'], stream=True)
-        foto_shiny = io.BytesIO(response2.content)
 
         # Criando Canvas
-        c = canvas.Canvas(buf, pagesize = letter, bottomup = 0)
+        c = canvas.Canvas(buf, pagesize = A4, bottomup = 0)
 
         # Configurando Pagina PDF
-        textob = c.beginText()
+        textob = c.beginText(x=80*inch,y=-7*inch)
         textob.setTextOrigin(inch, inch)
         textob.setFont("Helvetica", 14)
 
@@ -56,8 +52,6 @@ def index(request):
             data['nome'],
             data['altura'] + " M",
             data['peso'] + " kg",
-            f"{foto}",
-            f"{foto_shiny}",
             "=============",
         ]
 
@@ -67,24 +61,16 @@ def index(request):
 
 
         #finalizando
+        c.setTitle(data['nome'] + "-" + data['id'])
         c.drawText(textob)
+        c.drawImage(data['foto'],x=0,y=0, width=100, height=100, mask = 'auto')
+        c.drawImage(data['foto-shiny'],x=6.9*inch,y=0, width=100, height=100,mask = 'auto')
         c.showPage()
         c.save()
         buf.seek(0)
 
         #return
         return FileResponse(buf, as_attachment = True, filename = 'orçamento.pdf')
-
-
-        
-
-        # document = Document()
-        # document.add_heading(f"{data['nome']} - {data['id']}", 0)
-        # document.add_picture(foto, width=Inches(1.25))
-        # document.add_picture(foto_shiny, width=Inches(1.25))
-        
-
-        # document.save('demo.docx')
 
     else:
         data = {}
