@@ -8,6 +8,10 @@ import requests
 
 # Create your views here.
 def index(request):
+
+
+
+
     if request.method == "POST":
         pokemon = request.POST['pokemon'].lower()
         pokemon = pokemon.replace(' ', '%20')
@@ -41,9 +45,11 @@ def index(request):
         document.add_picture(foto_shiny, width=Inches(1.25))
         
 
-        document.save('../docx/demo.docx')
+        document.save('demo.docx')
+
+        return render(request, 'index.html' ,data , )
 
     else:
         data = {}
 
-    return render(request, 'index.html' ,data)
+        return render(request, 'index.html' ,data )
