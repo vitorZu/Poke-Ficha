@@ -1,10 +1,11 @@
-from django.shortcuts import render
-import urllib.request
-import json
+"""import"""
 import io
+import json
+import urllib.request
+from django.shortcuts import render
 from django.http import FileResponse
 from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
+from reportlab.lib.units import mm
 from reportlab.lib.pagesizes import A4
 # import requests
 
@@ -13,6 +14,7 @@ from reportlab.lib.pagesizes import A4
 
 # Create your views here.
 def index(request):
+    '''Função para gerar o arquivo PDF com base na PokeAPI'''
     if request.method == "POST":
         pokemon = request.POST['pokemon'].lower()
         pokemon = pokemon.replace(' ', '%20')
@@ -32,41 +34,33 @@ def index(request):
             "altura": str(altura),
             "peso": str(peso),
             "foto": str(list_of_data['sprites']['other']['official-artwork']['front_default']),
-            "foto-shiny": str(list_of_data['sprites']['other']['official-artwork']['front_shiny'])
+            "foto-shiny": str(list_of_data['sprites']['other']['official-artwork']['front_shiny']),
+            "moves": {}
         }
+
+        for i in range(len(list_of_data['moves'])):
+            data["moves"][i] = str(list_of_data['moves'][i]['move']['name']).capitalize
 
         # criando BIOstream and fotos
         buf = io.BytesIO()
 
         # Criando Canvas
-        c = canvas.Canvas(buf, pagesize = A4, bottomup = 0)
+        page = canvas.Canvas(buf, pagesize = A4)
+        #Texto
+        page.setTitle(data['nome'] + "-" + data['id'])
+        page.drawImage(data['foto'],x=20*mm,y=263*mm, width=100, height=100, mask = 'auto')
+        page.drawImage(data['foto-shiny'],x=155*mm,y=263*mm, width=100, height=100,mask = 'auto')
+        page.setFont("Helvetica", 35)
+        page.drawString(75*mm,263*mm,data['nome'])
+        page.line(30*mm,258*mm,182*mm,258*mm)
+        page.setFont("Helvetica", 14)
+        page.drawString(100*mm,252*mm,data['id'])
 
-        # Configurando Pagina PDF
-        textob = c.beginText(x=80*inch,y=-7*inch)
-        textob.setTextOrigin(inch, inch)
-        textob.setFont("Helvetica", 14)
+        # for i in range(len(list_of_data['moves'])):
+        #     page.drawString(200, 100 ,data['moves'][i])
 
-        #linha do Texto
-        lines = [
-            data['id'],
-            data['nome'],
-            data['altura'] + " M",
-            data['peso'] + " kg",
-            "=============",
-        ]
-
-        #looping
-        for line in lines:
-            textob.textLine(line)
-
-
-        #finalizando
-        c.setTitle(data['nome'] + "-" + data['id'])
-        c.drawText(textob)
-        c.drawImage(data['foto'],x=0,y=0, width=100, height=100, mask = 'auto')
-        c.drawImage(data['foto-shiny'],x=6.9*inch,y=0, width=100, height=100,mask = 'auto')
-        c.showPage()
-        c.save()
+        page.showPage()
+        page.save()
         buf.seek(0)
 
         #return
