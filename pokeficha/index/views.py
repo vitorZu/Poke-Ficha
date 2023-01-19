@@ -44,7 +44,6 @@ def index(request):
         document.add_picture(foto, width=Inches(1.25))
         document.add_picture(foto_shiny, width=Inches(1.25))
         
-
         document.save('demo.docx')
 
         return render(request, 'index.html' ,data , )
