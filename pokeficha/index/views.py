@@ -143,7 +143,7 @@ def index(request):
         buf.seek(0)
 
         #return
-        return FileResponse(buf, as_attachment = True, filename = 'orçamento.pdf')
+        return FileResponse(buf, as_attachment = True, filename = f"FichaPokemon-{data['nome']}.pdf")
 
     else:
         data = {}
